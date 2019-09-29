@@ -2,6 +2,7 @@ import {
   ADD_SONGS_TO_QUEUE,
   REMOVE_SONGS_TO_QUEUE,
   PLAY_SONG,
+  RESUME_SONG,
   PAUSE_SONG
 } from "./playerActionTypes";
 
@@ -23,6 +24,11 @@ const playerReducer = (state = initialState, action) => {
       return {
         ...state,
         ...(!!payload && { activeSongId: payload }),
+        playing: true
+      };
+    case RESUME_SONG:
+      return {
+        ...state,
         playing: true
       };
     case PAUSE_SONG:

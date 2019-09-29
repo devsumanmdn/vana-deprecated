@@ -1,4 +1,5 @@
 export const ADD_SONGS_TO_QUEUE = "ADD_SONGS_TO_QUEUE";
 export const REMOVE_SONGS_TO_QUEUE = "REMOVE_SONGS_TO_QUEUE";
 export const PLAY_SONG = "PLAY_SONG";
+export const RESUME_SONG = "RESUME_SONG";
 export const PAUSE_SONG = "PAUSE_SONG";

@@ -3,7 +3,7 @@ import {
   REMOVE_SONGS,
   ADD_SONGS_TO_SELECTION,
   REMOVE_SONGS_FROM_SELECTION
-} from "./songsActionTypes.js";
+} from "./songsActionTypes";
 
 export function addSongs(songs) {
   return {

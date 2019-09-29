@@ -5,6 +5,13 @@
   "devDependencies": {
     "electron": "^6.0.10",
     "electron-devtools-installer": "^2.2.4",
+    "eslint": "^6.5.0",
+    "eslint-config-airbnb": "^18.0.1",
+    "eslint-config-prettier": "^6.3.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-react": "^7.14.3",
     "foreman": "^3.0.1",
     "react-scripts": "^3.1.2"
   },
@@ -14,14 +21,16 @@
     "@material-ui/styles": "^4.4.3",
     "@material-ui/system": "^4.4.3",
     "music-metadata": "^4.8.0",
+    "prop-types": "^15.7.2",
     "react": "^16.10.0",
     "react-dom": "^16.10.0",
     "react-redux": "^7.1.1",
     "redux": "^4.0.4",
-    "redux-thunk": "^2.3.0"
+    "redux-thunk": "^2.3.0",
+    "uuid": "^3.3.3"
   },
   "homepage": "./",
-  "main": "src/electron-starter.js",
+  "main": "main.js",
   "scripts": {
     "start": "BROWSER=none react-scripts start",
     "build": "react-scripts build",

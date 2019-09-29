@@ -1,9 +1,9 @@
-import React, { Component } from "react";
+import React, { useState } from "react";
 import path from "path";
+import makeStyles from "@material-ui/styles/makeStyles";
 import uuid from "uuid";
 import { connect } from "react-redux";
 
-import "./Home.css";
 import { addSongs as addSongsAction } from "../redux/songs/songsActions";
 import SongListItem from "./SongListItem";
 import Player from "./Player";
@@ -18,75 +18,85 @@ const readFile = filePath => {
   });
 };
 
-class Home extends Component {
-  state = {
-    folderPath: "",
-    files: []
-  };
+const useStyles = makeStyles({
+  "@global": {
+    body: {
+      fontFamily: "Sans Serif"
+    }
+  },
+  container: {
+    display: "flex",
+    flexDirection: "column",
+    backgroundColor: "#223",
+    color: "white",
+    height: "100vh"
+  },
+  songsList: {
+    flexGrow: 1
+  }
+});
 
-  readTree = entry => {
+const Home = ({ songs, player, addSongs }) => {
+  const [folderPath, setFolderPath] = useState("");
+
+  const { all: allSongs } = songs;
+  const { activeSongId, playing } = player;
+
+  const classes = useStyles();
+
+  const readTree = entry => {
     fs.lstat(entry, async (err, stat) => {
       if (err) throw err;
       if (stat.isDirectory()) {
-        fs.readdir(entry, (err, files) => {
-          if (err) throw err;
+        fs.readdir(entry, (readdirErr, files) => {
+          if (readdirErr) throw readdirErr;
           files.forEach(file => {
-            this.readTree(path.join(entry, file));
+            readTree(path.join(entry, file));
           });
         });
       } else {
         const file = await readFile(entry);
         if (file) {
-          const { addSongs } = this.props;
           addSongs([{ ...file, id: uuid(), location: entry }]);
         }
       }
     });
   };
 
-  chooseFolderDialog = async () => {
+  const chooseFolderDialog = async () => {
     const { canceled, filePaths } = await remote.dialog.showOpenDialog({
       properties: ["openDirectory"]
     });
 
     if (!canceled) {
-      const [folderPath] = filePaths;
-
-      this.setState({ folderPath });
-      this.readTree(folderPath);
+      setFolderPath(filePaths[0]);
+      readTree(filePaths[0]);
     }
   };
 
-  render() {
-    const { folderPath } = this.state;
-    const {
-      songs: { all: allSongs },
-      player,
-      player: { activeSongId, playing }
-    } = this.props;
+  const activeSong = allSongs[activeSongId];
 
-    const activeSong = allSongs[activeSongId];
-
-    return (
-      <div className={"container"} data-tid="container">
-        <div>
-          <button onClick={this.chooseFolderDialog}>Choose folders</button>
-          <p>{folderPath}</p>
-        </div>
-        <div>
-          {Object.values(allSongs).map((metaData, index) => (
-            <SongListItem
-              playing={metaData.id === activeSongId && playing}
-              key={metaData.id}
-              metaData={metaData}
-            />
-          ))}
-        </div>
-        <Player song={activeSong} playerState={player} />
+  return (
+    <div className={classes.container}>
+      <div>
+        <button type={"button"} onClick={chooseFolderDialog}>
+          Choose folders
+        </button>
+        <p>{folderPath}</p>
       </div>
-    );
-  }
-}
+      <div className={classes.songsList}>
+        {Object.values(allSongs).map(metaData => (
+          <SongListItem
+            playing={metaData.id === activeSongId && playing}
+            key={metaData.id}
+            metaData={metaData}
+          />
+        ))}
+      </div>
+      <Player song={activeSong} playerState={player} />
+    </div>
+  );
+};
 
 const mapStateToProps = ({ songs, player }) => ({
   songs,
