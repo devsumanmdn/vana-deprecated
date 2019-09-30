@@ -2,6 +2,8 @@ import {
   ADD_SONGS_TO_QUEUE,
   REMOVE_SONGS_TO_QUEUE,
   PLAY_SONG,
+  PLAY_NEXT_SONG,
+  PLAY_PREV_SONG,
   RESUME_SONG,
   PAUSE_SONG
 } from "./playerActionTypes";
@@ -24,6 +26,18 @@ export function playSong(songId) {
   return {
     type: PLAY_SONG,
     payload: songId
+  };
+}
+
+export function playNextSong() {
+  return {
+    type: PLAY_NEXT_SONG
+  };
+}
+
+export function playPrevSong() {
+  return {
+    type: PLAY_PREV_SONG
   };
 }
 

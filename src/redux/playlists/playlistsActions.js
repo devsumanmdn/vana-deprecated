@@ -1,10 +1,10 @@
 import {
   ADD_SONGS_TO_PLAYLIST,
-REMOVE_SONGS_FROM_PLAYLIST,
-ADD_PLAYLIST,
-REMOVE_PLAYLIST,
-RENAME_PLAYLIST
-} from './playlistsActionTypes';
+  REMOVE_SONGS_FROM_PLAYLIST,
+  ADD_PLAYLIST,
+  REMOVE_PLAYLIST,
+  RENAME_PLAYLIST
+} from "./playlistsActionTypes";
 
 export function addSongsToPlaylist(songs) {
   return {
@@ -37,9 +37,9 @@ export function removePlaylist(playlistId) {
   };
 }
 
-export function removePlaylist({playlistId, name}) {
+export function renamePlaylist({ playlistId, name }) {
   return {
-    type: REMOVE_PLAYLIST,
-    payload: {playlistId, name}
+    type: RENAME_PLAYLIST,
+    payload: { playlistId, name }
   };
 }

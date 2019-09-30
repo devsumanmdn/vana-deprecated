@@ -49,19 +49,14 @@ const useStyles = makeStyles({
 });
 
 function SongListItem({ metaData, playing, playSong, pauseSong }) {
-  const {
-    common: { title, artist, album }
-  } = metaData;
+  const { title } = metaData;
 
   const classes = useStyles();
 
-  console.log(metaData);
-  const picture =
-    metaData.common && metaData.common.picture && metaData.common.picture[0]
-      ? metaData.common.picture[0]
-      : false;
-  const albumArtDataURL = picture
-    ? `data:image/jpeg;base64,${picture.data.toString("base64")}`
+  const albumArt = metaData && metaData.albumArt ? metaData.albumArt : false;
+
+  const albumArtDataURL = albumArt
+    ? `data:image/jpeg;base64,${albumArt.data.toString("base64")}`
     : undefined;
 
   const handlePlayPause = () => {
@@ -94,6 +89,13 @@ function SongListItem({ metaData, playing, playSong, pauseSong }) {
 }
 
 SongListItem.propTypes = {
+  metaData: PropTypes.shape({
+    location: PropTypes.string,
+    id: PropTypes.string,
+    title: PropTypes.string,
+    albumArt: PropTypes.string
+  }).isRequired,
+  playing: PropTypes.bool.isRequired,
   playSong: PropTypes.func.isRequired,
   pauseSong: PropTypes.func.isRequired
 };

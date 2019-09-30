@@ -11,16 +11,20 @@ const rootReducer = combineReducers({
   playlists
 });
 
-// If Redux DevTools Extension is installed use it, otherwise use Redux compose
-/* eslint-disable no-underscore-dangle */
-const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
-/* eslint-enable no-underscore-dangle */
+const middlewares = [thunk];
+
+if (process.env.NODE_ENV === `development`) {
+  // eslint-disable-next-line global-require
+  const { logger } = window.require(`redux-logger`);
+
+  middlewares.push(logger);
+}
 
 const enhancers = [];
 
 // Apply Middleware & Compose Enhancers
-enhancers.push(applyMiddleware(thunk));
-const enhancer = composeEnhancers(...enhancers);
+enhancers.push(applyMiddleware(...middlewares));
+const enhancer = compose(...enhancers);
 
 const initialState = {};
 

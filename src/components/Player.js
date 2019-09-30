@@ -1,14 +1,26 @@
-import React, { useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import makeStyles from "@material-ui/styles/makeStyles";
-import PlayArrowRounded from "@material-ui/icons/PlayArrowRounded";
-import PauseRounded from "@material-ui/icons/PauseRounded";
+import PlayIcon from "@material-ui/icons/PlayArrowRounded";
+import PlayNextIcon from "@material-ui/icons/SkipNextRounded";
+import PlayPreviousIcon from "@material-ui/icons/SkipPreviousRounded";
+import PauseIcon from "@material-ui/icons/PauseRounded";
+import Slider from "@material-ui/core/Slider";
+import VolumeOff from "@material-ui/icons/VolumeOff";
+import VolumeDown from "@material-ui/icons/VolumeDown";
+import VolumeMute from "@material-ui/icons/VolumeMute";
+import VolumeUp from "@material-ui/icons/VolumeUp";
+import moment from "moment";
+import momentDurationFormatSetup from "moment-duration-format";
 import { connect } from "react-redux";
 
 import {
   playSong as playSongAction,
   pauseSong as pauseSongAction,
-  resumeSong as resumeSongAction
+  resumeSong as resumeSongAction,
+  playNextSong as playNextSongAction,
+  playPrevSong as playPrevSongAction
+  // setTotalDuration as setTotalDurationAction
 } from "../redux/player/playerActions";
 
 const fs = window.require("fs");
@@ -18,7 +30,6 @@ const useStyle = makeStyles({
     position: "sticky",
     bottom: 0,
     minHeight: 60,
-    width: "100vw",
     backgroundColor: "#222",
     display: "flex",
     alignItems: "center",
@@ -47,13 +58,53 @@ const useStyle = makeStyles({
     "& > svg": {
       fontSize: 18
     }
+  },
+  volumeContainer: {
+    display: "flex",
+    "& > svg": {
+      marginRight: 10
+    }
+  },
+  songPlaybackProgress: {
+    flexGrow: 1,
+    display: "flex",
+    "& > *": {
+      margin: 10,
+      alignItems: "center"
+    }
+  },
+  progessSlider: {},
+  volumeSlider: {
+    width: 100
   }
 });
 
-const Player = ({ song, playerState, playSong, pauseSong }) => {
-  const player = useRef(null);
-
+const Player = ({
+  song,
+  playerState,
+  playSong,
+  pauseSong,
+  playNextSong,
+  playPrevSong
+}) => {
   const classes = useStyle();
+  const player = useRef(null);
+  const [totalDuration, setTotalDuration] = useState();
+  const [playedDuration, setPlayedDuration] = useState();
+  const [expandedView, setExpadedView] = useState(false);
+  const [volume, setVolume] = React.useState(30);
+
+  const handleChange = (event, newVolume) => {
+    if (player.current) {
+      player.current.volume = newVolume / 100;
+    }
+  };
+
+  const handleSeek = (event, newValue) => {
+    if (player.current) {
+      player.current.currentTime = totalDuration * (newValue / 100);
+    }
+  };
 
   useEffect(() => {
     if (player.current) {
@@ -66,17 +117,29 @@ const Player = ({ song, playerState, playSong, pauseSong }) => {
   }, [playerState.playing]);
 
   const play = () => {
-    if (player.current !== null || !playerState.playing) {
+    if (player.current !== null) {
       player.current.pause();
     }
 
     fs.readFile(song.location, (err, data) => {
       const songDataURL = song
-        ? `data:audio/${song.format.codec.toLowerCase()};base64,${data.toString(
+        ? `data:audio/${song.codec.toLowerCase()};base64,${data.toString(
             "base64"
           )}`
         : null;
       player.current = new Audio(songDataURL);
+      player.current.addEventListener("loadeddata", () => {
+        setTotalDuration(player.current.duration);
+      });
+      player.current.addEventListener("timeupdate", () => {
+        setPlayedDuration(player.current.currentTime);
+      });
+      player.current.addEventListener("volumechange", () => {
+        setVolume(player.current.volume);
+      });
+      player.current.addEventListener("ended", () => {
+        playNextSong();
+      });
       player.current.play();
     });
   };
@@ -97,18 +160,18 @@ const Player = ({ song, playerState, playSong, pauseSong }) => {
 
   const { playing } = playerState;
 
-  const picture =
-    song && song.common && song.common.picture && song.common.picture[0]
-      ? song.common.picture[0]
-      : false;
-  const albumArtDataURL = picture
-    ? `data:image/jpeg;base64,${picture.data.toString("base64")}`
+  const albumArt = song && song.albumArt ? song.albumArt : false;
+
+  const albumArtDataURL = albumArt
+    ? `data:image/jpeg;base64,${albumArt.data.toString("base64")}`
     : undefined;
 
   return (
     <div className={classes.root}>
       {song ? (
         <img
+          role={"presentation"}
+          onClick={() => setExpadedView(!expandedView)}
           className={classes.albumArt}
           src={albumArtDataURL}
           alt={"albumArt"}
@@ -118,11 +181,52 @@ const Player = ({ song, playerState, playSong, pauseSong }) => {
       )}
       <button
         type={"button"}
+        onClick={playPrevSong}
+        className={classes.playBtn}
+      >
+        <PlayPreviousIcon />
+      </button>
+      <button
+        type={"button"}
         onClick={handlePlayPause}
         className={classes.playBtn}
       >
-        {playing ? <PauseRounded /> : <PlayArrowRounded />}
+        {playing ? <PauseIcon /> : <PlayIcon />}
       </button>
+      <button
+        type={"button"}
+        onClick={playNextSong}
+        className={classes.playBtn}
+      >
+        <PlayNextIcon />
+      </button>
+      <div className={classes.songPlaybackProgress}>
+        <span>
+          {moment.duration(totalDuration, "seconds").format("mm:ss", {
+            trim: false
+          })}
+        </span>
+        <Slider
+          classes={{ root: classes.progessSlider }}
+          value={(playedDuration / totalDuration) * 100}
+          aria-labelledby={"continuous-slider"}
+          onChange={handleSeek}
+        />
+        <span>
+          {moment.duration(playedDuration, "seconds").format("mm:ss", {
+            trim: false
+          })}
+        </span>
+      </div>
+      <div className={classes.volumeContainer}>
+        <VolumeUp />
+        <Slider
+          classes={{ root: classes.volumeSlider }}
+          value={volume * 100}
+          onChange={handleChange}
+          aria-labelledby={"continuous-slider"}
+        />
+      </div>
     </div>
   );
 };
@@ -132,12 +236,15 @@ Player.propTypes = {
     playing: PropTypes.bool
   }).isRequired,
   song: PropTypes.shape({
-    format: PropTypes.objectOf(PropTypes.string),
-    common: PropTypes.objectOf(PropTypes.string),
-    location: PropTypes.string
+    codec: PropTypes.string,
+    title: PropTypes.string,
+    location: PropTypes.string,
+    albumArt: PropTypes.string
   }),
   playSong: PropTypes.func.isRequired,
-  pauseSong: PropTypes.func.isRequired
+  pauseSong: PropTypes.func.isRequired,
+  playNextSong: PropTypes.func.isRequired,
+  playPrevSong: PropTypes.func.isRequired
 };
 
 Player.defaultProps = {
@@ -147,7 +254,9 @@ Player.defaultProps = {
 const mapDispatchToProps = {
   playSong: playSongAction,
   pauseSong: pauseSongAction,
-  resumeSong: resumeSongAction
+  resumeSong: resumeSongAction,
+  playNextSong: playNextSongAction,
+  playPrevSong: playPrevSongAction
 };
 
 export default connect(
