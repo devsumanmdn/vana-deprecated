@@ -9,6 +9,7 @@ import { addSongs as addSongsAction } from "../redux/songs/songsActions";
 import { addSongsToQueue as addSongsToQueueAction } from "../redux/player/playerActions";
 import SongListItem from "./SongListItem";
 import Player from "./Player";
+import Sidebar from "./Sidebar";
 
 const fs = window.require("fs");
 const mm = window.require("music-metadata");
@@ -24,17 +25,34 @@ const useStyles = makeStyles({
   "@global": {
     body: {
       fontFamily: "Sans Serif"
+    },
+    "*::-webkit-scrollbar": {
+      width: 8
+    },
+    "*::-webkit-scrollbar-track": {
+      boxShadow: "inset 0 0 6px rgba(0,0,0,0.3)"
+    },
+
+    "*::-webkit-scrollbar-thumb": {
+      backgroundColor: "#444",
+      outline: "1px solid slategrey",
+      borderRadius: 4
     }
   },
   container: {
     display: "flex",
-    flexDirection: "column",
     backgroundColor: "#223",
     color: "white",
     height: "100vh"
   },
+  mainView: {
+    flexGrow: 1,
+    display: "flex",
+    flexDirection: "column"
+  },
   songsList: {
-    flexGrow: 1
+    flexGrow: 1,
+    overflow: "auto"
   }
 });
 
@@ -100,7 +118,6 @@ const Home = ({ songs, player, addSongs, addSongsToQueue }) => {
 
   const playAll = () => {
     const songIds = Object.values(allSongs).map(({ id }) => id);
-    console.log({ songIds });
     addSongsToQueue(songIds);
   };
 
@@ -108,27 +125,30 @@ const Home = ({ songs, player, addSongs, addSongsToQueue }) => {
 
   return (
     <div className={classes.container}>
-      <div>
-        <button type={"button"} onClick={chooseFolderDialog}>
-          Choose folders
-        </button>
-        <p>{folderPath}</p>
+      <Sidebar />
+      <div className={classes.mainView}>
+        <div>
+          <button type={"button"} onClick={chooseFolderDialog}>
+            Choose folders
+          </button>
+          <p>{folderPath}</p>
+        </div>
+        <div>
+          <button type={"button"} onClick={playAll}>
+            Play All
+          </button>
+        </div>
+        <div className={classes.songsList}>
+          {Object.values(allSongs).map(metaData => (
+            <SongListItem
+              playing={metaData.id === activeSongId && playing}
+              key={metaData.id}
+              metaData={metaData}
+            />
+          ))}
+        </div>
+        <Player song={activeSong} playerState={player} />
       </div>
-      <div>
-        <button type={"button"} onClick={playAll}>
-          Play All
-        </button>
-      </div>
-      <div className={classes.songsList}>
-        {Object.values(allSongs).map(metaData => (
-          <SongListItem
-            playing={metaData.id === activeSongId && playing}
-            key={metaData.id}
-            metaData={metaData}
-          />
-        ))}
-      </div>
-      <Player song={activeSong} playerState={player} />
     </div>
   );
 };

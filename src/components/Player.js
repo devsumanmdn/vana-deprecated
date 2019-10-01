@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
+import clsx from "clsx";
 import makeStyles from "@material-ui/styles/makeStyles";
+import withStyles from "@material-ui/styles/withStyles";
 import PlayIcon from "@material-ui/icons/PlayArrowRounded";
 import PlayNextIcon from "@material-ui/icons/SkipNextRounded";
 import PlayPreviousIcon from "@material-ui/icons/SkipPreviousRounded";
 import PauseIcon from "@material-ui/icons/PauseRounded";
-import Slider from "@material-ui/core/Slider";
+import MUISlider from "@material-ui/core/Slider";
 import VolumeOff from "@material-ui/icons/VolumeOff";
 import VolumeDown from "@material-ui/icons/VolumeDown";
 import VolumeMute from "@material-ui/icons/VolumeMute";
@@ -25,15 +27,53 @@ import {
 
 const fs = window.require("fs");
 
+const Slider = withStyles({
+  root: {
+    color: "#52af77",
+    height: 8
+  },
+  thumb: {
+    height: 15,
+    width: 15,
+    backgroundColor: "#fff",
+    // border: "2px solid currentColor",
+    transformOrigin: "center",
+    transform: "translate(0, 0)",
+    boxShadow: "0 0 4px 2px #fff6",
+    "&:hover,&$active": {
+      boxShadow: "inherit",
+      transform: "scale(1.2)"
+    }
+  },
+  active: {},
+  valueLabel: {
+    left: "calc(-50% + 4px)"
+  },
+  track: {
+    height: 4,
+    borderRadius: 2
+  },
+  rail: {
+    height: 4,
+    borderRadius: 2
+  }
+})(MUISlider);
+
 const useStyle = makeStyles({
   root: {
-    position: "sticky",
-    bottom: 0,
+    width: "100%",
+    maxHeight: 60,
     minHeight: 60,
     backgroundColor: "#222",
     display: "flex",
     alignItems: "center",
-    padding: "0 20px"
+    padding: "0 20px",
+    transitionDuration: "1s",
+    "&.expandedView": {
+      width: "100vw",
+      height: "100vh",
+      top: 0
+    }
   },
   albumArt: {
     height: 50,
@@ -167,7 +207,7 @@ const Player = ({
     : undefined;
 
   return (
-    <div className={classes.root}>
+    <div className={clsx(classes.root, { expandedView })}>
       {song ? (
         <img
           role={"presentation"}
