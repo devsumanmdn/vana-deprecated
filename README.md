@@ -1,4 +1,10 @@
 # vana
+## Under development, check again later for stable releases.
 Plays offline music. Supports wide variety of audio formats.
 
-## Under development check again later.
+# Running in development
+run below commands from the project directory:
+```
+npm i
+npm run dev
+```
